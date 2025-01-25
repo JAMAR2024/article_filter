@@ -2,7 +2,6 @@ import os
 import pandas as pd
 import streamlit as st
 from io import BytesIO
-pip install openpyxl
 import openpyxl
 print("openpyxl importado correctamente")
 
