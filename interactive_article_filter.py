@@ -1,8 +1,9 @@
-
 import os
 import pandas as pd
 import streamlit as st
 from io import BytesIO
+import openpyxl
+print("openpyxl importado correctamente")
 
 # Cargar el archivo de datos
 @st.cache_data
