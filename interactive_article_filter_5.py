@@ -3,7 +3,6 @@ import os
 import pandas as pd
 import streamlit as st
 from io import BytesIO
-from openpyxl import Workbook
 
 # Load the data file
 @st.cache_data
@@ -101,19 +100,5 @@ if uploaded_file is not None:
         # Display filtered table
         st.subheader("Filtered Table")
         st.dataframe(filtered_data)
-        
-        # Download results as Excel
-        def convert_to_excel(df):
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine="openpyxl") as writer:
-                df.to_excel(writer, index=False)
-            return output.getvalue()
-        
-        st.download_button(
-            label="Download results in Excel",
-            data=convert_to_excel(filtered_data),
-            file_name="filtered_data.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
 else:
     st.info("Please upload a CSV file to get started.")
