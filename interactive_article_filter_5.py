@@ -4,76 +4,74 @@ import pandas as pd
 import streamlit as st
 from io import BytesIO
 
-# Cargar el archivo de datos
+# Load the data file
 @st.cache_data
 def load_data(file):
     try:
         data = pd.read_csv(file, encoding='ISO-8859-1', sep=';', on_bad_lines='skip')
-        st.write("Datos cargados correctamente:")
+        st.write("Data loaded successfully:")
         st.write(data.head())
         return data
     except Exception as e:
-        st.error(f"Error al cargar el archivo: {e}")
+        st.error(f"Error loading file: {e}")
         return pd.DataFrame()
 
-# Configuración de la aplicación
+# App configuration
 st.set_page_config(page_title="Interactive Article Filter", layout="wide")
 
-# Título
+# Title
 st.title("Interactive Article Filter")
-st.markdown("Usa los filtros a continuación para explorar y segmentar la base de datos de manera interactiva.")
+st.markdown("Use the filters below to explore and segment the database interactively.")
 st.markdown("---")
 
-# Carga dinámica del archivo
-uploaded_file = st.file_uploader("Sube tu archivo CSV aquí", type=["csv"])
-
+# Dynamic file upload
+uploaded_file = st.file_uploader("Upload your CSV file here", type=["csv"])
 if uploaded_file is not None:
     data = load_data(uploaded_file)
-
     if data.empty:
-        st.warning("La base de datos no se pudo cargar. Verifica que el archivo existe y su formato es correcto.")
+        st.warning("The database could not be loaded. Please check that the file exists and its format is correct.")
     else:
-        # Filtros en la barra lateral
-        st.sidebar.header("Filtros")
-
-        # Filtro de período de publicación
-        period_filter = st.sidebar.slider("Rango de publicación:", 2000, 2025, (2000, 2025))
-
-        # Filtro de citas
-        citations_filter = st.sidebar.slider("Rango de citas:", 0, 500, (0, 500))
-
-        # Filtro de palabras clave
-        keywords_filter = st.sidebar.text_input("Palabras clave (separadas por comas):", "")
-        exact_match = st.sidebar.checkbox("Coincidencia exacta", value=False)
-
-        # Filtro de JCR
-        jcr_options = ["All", "No Q", "Q1", "Q2", "Q3", "Q4"]
-        jcr_filter = st.sidebar.selectbox("Rango JCR:", jcr_options, index=0)
-
-        # Verificar si la columna "Knowledge area group" existe
+        # Sidebar filters
+        st.sidebar.header("Filters")
+        
+        # Publication period filter
+        publication_years = ["All", "None"] + sorted(data["Year"].dropna().unique().tolist())
+        period_filter = st.sidebar.selectbox("Publication range:", publication_years, index=0)
+        
+        # Citations filter
+        citation_ranges = ["All", "None"] + sorted(data["Cited by"].dropna().unique().tolist())
+        citations_filter = st.sidebar.selectbox("Citations range:", citation_ranges, index=0)
+        
+        # Keywords filter
+        keyword_categories = ["All", "None"] + sorted(data["Keywords"].dropna().unique().tolist())
+        keywords_filter = st.sidebar.selectbox("Keywords:", keyword_categories, index=0)
+        
+        exact_match = st.sidebar.checkbox("Exact match", value=False)
+        
+        # JCR filter
+        jcr_options = ["All", "None", "No Q", "Q1", "Q2", "Q3", "Q4"]
+        jcr_filter = st.sidebar.selectbox("JCR range:", jcr_options, index=0)
+        
+        # Knowledge area group filter
         if "Knowledge area group" in data.columns:
-            knowledge_group_filter = st.sidebar.selectbox("Grupo de área de conocimiento:", ["All"] + list(data["Knowledge area group"].dropna().unique()))
+            knowledge_group_filter = st.sidebar.selectbox("Knowledge area group:", ["All", "None"] + list(data["Knowledge area group"].dropna().unique()))
         else:
-            knowledge_group_filter = st.sidebar.selectbox("Grupo de área de conocimiento:", ["All"])
-            st.warning("La columna 'Knowledge area group' no se encontró en el archivo CSV.")
-
-        # Aplicar filtros
+            knowledge_group_filter = st.sidebar.selectbox("Knowledge area group:", ["All", "None"])
+            st.warning("The column 'Knowledge area group' was not found in the CSV file.")
+        
+        # Apply filters
         filtered_data = data.copy()
-
-        # Filtrar por período de publicación
-        filtered_data = filtered_data[
-            (filtered_data["Year"] >= period_filter[0]) &
-            (filtered_data["Year"] <= period_filter[1])
-        ]
-
-        # Filtrar por citas
-        filtered_data = filtered_data[
-            (filtered_data["Cited by"] >= citations_filter[0]) &
-            (filtered_data["Cited by"] <= citations_filter[1])
-        ]
-
-        # Filtrar por palabras clave
-        if keywords_filter:
+        
+        # Filter by publication period
+        if period_filter != "All" and period_filter != "None":
+            filtered_data = filtered_data[filtered_data["Year"] == period_filter]
+        
+        # Filter by citations
+        if citations_filter != "All" and citations_filter != "None":
+            filtered_data = filtered_data[filtered_data["Cited by"] == citations_filter]
+        
+        # Filter by keywords
+        if keywords_filter != "All" and keywords_filter != "None":
             keywords = [kw.strip() for kw in keywords_filter.split(",")]
             if exact_match:
                 filtered_data = filtered_data[
@@ -83,38 +81,38 @@ if uploaded_file is not None:
                 filtered_data = filtered_data[
                     filtered_data["Keywords"].str.contains('|'.join(keywords), case=False, na=False)
                 ]
-
-        # Filtrar por JCR
-        if jcr_filter != "All":
+        
+        # Filter by JCR
+        if jcr_filter != "All" and jcr_filter != "None":
             filtered_data = filtered_data[filtered_data["JCR rank"] == jcr_filter]
-
-        # Filtrar por grupo de área de conocimiento
-        if knowledge_group_filter != "All" and "Knowledge area group" in data.columns:
+        
+        # Filter by knowledge area group
+        if knowledge_group_filter != "All" and knowledge_group_filter != "None" and "Knowledge area group" in data.columns:
             filtered_data = filtered_data[filtered_data["Knowledge area group"] == knowledge_group_filter]
-
-        # Resultados
-        st.subheader("Resumen de resultados")
+        
+        # Results summary
+        st.subheader("Results Summary")
         if filtered_data.empty:
-            st.warning("No se encontraron resultados para los filtros seleccionados.")
+            st.warning("No results found for the selected filters.")
         else:
-            st.write(f"Total de resultados: {len(filtered_data)}")
-
-            # Mostrar tabla filtrada
-            st.subheader("Tabla filtrada")
-            st.dataframe(filtered_data)
-
-            # Descargar resultados como Excel
-            def convert_to_excel(df):
-                output = BytesIO()
-                with pd.ExcelWriter(output, engine="openpyxl") as writer:
-                    df.to_excel(writer, index=False)
-                return output.getvalue()
-
-            st.download_button(
-                label="Descargar resultados en Excel",
-                data=convert_to_excel(filtered_data),
-                file_name="filtered_data.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+            st.write(f"Total results: {len(filtered_data)}")
+        
+        # Display filtered table
+        st.subheader("Filtered Table")
+        st.dataframe(filtered_data)
+        
+        # Download results as Excel
+        def convert_to_excel(df):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False)
+            return output.getvalue()
+        
+        st.download_button(
+            label="Download results in Excel",
+            data=convert_to_excel(filtered_data),
+            file_name="filtered_data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 else:
-    st.info("Por favor, sube un archivo CSV para comenzar.")
+    st.info("Please upload a CSV file to get started.")
