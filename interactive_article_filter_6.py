@@ -28,7 +28,7 @@ st.markdown("---")
 uploaded_file = st.file_uploader("Upload your CSV file here", type=["csv"])
 
 # Load default data if no file is uploaded
-default_file = "default_data.csv"  # Replace with your default CSV file name
+default_file = "Base Final_25_12_2024_5.csv"  # Ensure this file is in the same directory
 if uploaded_file is not None:
     data = load_data(uploaded_file)
 elif os.path.exists(default_file):
