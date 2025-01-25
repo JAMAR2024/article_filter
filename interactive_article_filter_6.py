@@ -28,15 +28,14 @@ st.markdown("---")
 uploaded_file = st.file_uploader("Upload your CSV file here", type=["csv"])
 
 # Load default data if no file is uploaded
+default_file = "default_data.csv"  # Replace with your default CSV file name
 if uploaded_file is not None:
     data = load_data(uploaded_file)
+elif os.path.exists(default_file):
+    data = load_data(default_file)
 else:
-    default_file = "default_data.csv"  # Replace with your default CSV file name
-    if os.path.exists(default_file):
-        data = load_data(default_file)
-    else:
-        st.warning("No file uploaded and default data file not found.")
-        data = pd.DataFrame()
+    st.warning("No file uploaded and default data file not found.")
+    data = pd.DataFrame()
 
 if not data.empty:
     # Sidebar filters
