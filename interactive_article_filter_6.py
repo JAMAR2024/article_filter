@@ -42,12 +42,12 @@ if not data.empty:
     st.sidebar.header("Filters")
     
     # Publication period filter
-    publication_years = ["All", "None"] + sorted(data["Year"].dropna().unique().tolist())
-    period_filter = st.sidebar.selectbox("Publication range:", publication_years, index=0)
+    period_options = ["All", "None", "2007-2010", "2011-2014", "2015-2020", "2021-2025"]
+    period_filter = st.sidebar.selectbox("Publication range:", period_options, index=0)
     
     # Citations filter
-    citation_ranges = ["All", "None"] + sorted(data["Cited by"].dropna().unique().tolist())
-    citations_filter = st.sidebar.selectbox("Citations range:", citation_ranges, index=0)
+    citation_options = ["All", "None", "1 to 10 citations", "11 to 24 citations", "25 to 49 citations", "50 to 99 citations", "100 to 249 citations", "250 or more citations"]
+    citations_filter = st.sidebar.selectbox("Citations range:", citation_options, index=0)
     
     # Keywords filter
     keyword_categories = ["All", "None"] + sorted(data["Keywords"].dropna().unique().tolist())
@@ -71,11 +71,29 @@ if not data.empty:
     
     # Filter by publication period
     if period_filter != "All" and period_filter != "None":
-        filtered_data = filtered_data[filtered_data["Year"] == period_filter]
+        if period_filter == "2007-2010":
+            filtered_data = filtered_data[(filtered_data["Year"] >= 2007) & (filtered_data["Year"] <= 2010)]
+        elif period_filter == "2011-2014":
+            filtered_data = filtered_data[(filtered_data["Year"] >= 2011) & (filtered_data["Year"] <= 2014)]
+        elif period_filter == "2015-2020":
+            filtered_data = filtered_data[(filtered_data["Year"] >= 2015) & (filtered_data["Year"] <= 2020)]
+        elif period_filter == "2021-2025":
+            filtered_data = filtered_data[(filtered_data["Year"] >= 2021) & (filtered_data["Year"] <= 2025)]
     
     # Filter by citations
     if citations_filter != "All" and citations_filter != "None":
-        filtered_data = filtered_data[filtered_data["Cited by"] == citations_filter]
+        if citations_filter == "1 to 10 citations":
+            filtered_data = filtered_data[(filtered_data["Cited by"] >= 1) & (filtered_data["Cited by"] <= 10)]
+        elif citations_filter == "11 to 24 citations":
+            filtered_data = filtered_data[(filtered_data["Cited by"] >= 11) & (filtered_data["Cited by"] <= 24)]
+        elif citations_filter == "25 to 49 citations":
+            filtered_data = filtered_data[(filtered_data["Cited by"] >= 25) & (filtered_data["Cited by"] <= 49)]
+        elif citations_filter == "50 to 99 citations":
+            filtered_data = filtered_data[(filtered_data["Cited by"] >= 50) & (filtered_data["Cited by"] <= 99)]
+        elif citations_filter == "100 to 249 citations":
+            filtered_data = filtered_data[(filtered_data["Cited by"] >= 100) & (filtered_data["Cited by"] <= 249)]
+        elif citations_filter == "250 or more citations":
+            filtered_data = filtered_data[filtered_data["Cited by"] >= 250]
     
     # Filter by keywords
     if keywords_filter != "All" and keywords_filter != "None":
