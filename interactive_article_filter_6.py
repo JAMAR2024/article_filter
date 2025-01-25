@@ -117,10 +117,14 @@ if not data.empty:
     
     # Results summary
     st.subheader("Results Summary")
-    if filtered_data.empty:
+    if period_filter == 'All' and citations_filter == 'All' and keywords_filter == 'All' and jcr_filter == 'All' and knowledge_group_filter == 'All':
+        total_results = len(data)
+        st.write(f"Total results: {total_results}")
+    elif filtered_data.empty:
         st.warning("No results found for the selected filters.")
     else:
-        st.write(f"Total results: {len(filtered_data)}")
+        total_results = len(filtered_data)
+        st.write(f"Total results: {total_results}")
     
     # Display filtered table
     st.subheader("Filtered Table")
