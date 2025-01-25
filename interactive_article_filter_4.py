@@ -37,16 +37,13 @@ if uploaded_file is not None:
         st.sidebar.header("Filtros")
 
         # Filtro de período de publicación
-        period_options = sorted(data["Period of publication"].unique())
-        period_filter = st.sidebar.selectbox("Rango de publicación:", ["All"] + period_options)
+        period_filter = st.sidebar.slider("Rango de publicación:", 2000, 2025, (2000, 2025))
 
         # Filtro de citas
-        citations_options = sorted(data["Number of Citations"].unique())
-        citations_filter = st.sidebar.selectbox("Rango de citas:", ["All"] + citations_options)
+        citations_filter = st.sidebar.slider("Rango de citas:", 0, 500, (0, 500))
 
         # Filtro de palabras clave
-        keywords_options = sorted(data["Keywords"].dropna().unique())
-        keywords_filter = st.sidebar.multiselect("Palabras clave:", keywords_options)
+        keywords_filter = st.sidebar.text_input("Palabras clave (separadas por comas):", "")
         exact_match = st.sidebar.checkbox("Coincidencia exacta", value=False)
 
         # Filtro de JCR
@@ -64,22 +61,27 @@ if uploaded_file is not None:
         filtered_data = data.copy()
 
         # Filtrar por período de publicación
-        if period_filter != "All":
-            filtered_data = filtered_data[filtered_data["Period of publication"] == period_filter]
+        filtered_data = filtered_data[
+            (filtered_data["Year"] >= period_filter[0]) &
+            (filtered_data["Year"] <= period_filter[1])
+        ]
 
         # Filtrar por citas
-        if citations_filter != "All":
-            filtered_data = filtered_data[filtered_data["Number of Citations"] == citations_filter]
+        filtered_data = filtered_data[
+            (filtered_data["Cited by"] >= citations_filter[0]) &
+            (filtered_data["Cited by"] <= citations_filter[1])
+        ]
 
         # Filtrar por palabras clave
         if keywords_filter:
+            keywords = [kw.strip() for kw in keywords_filter.split(",")]
             if exact_match:
                 filtered_data = filtered_data[
-                    filtered_data["Keywords"].apply(lambda x: all(kw in x.split(",") for kw in keywords_filter) if pd.notna(x) else False)
+                    filtered_data["Keywords"].apply(lambda x: all(kw in x.split(",") for kw in keywords) if pd.notna(x) else False)
                 ]
             else:
                 filtered_data = filtered_data[
-                    filtered_data["Keywords"].str.contains('|'.join(keywords_filter), case=False, na=False)
+                    filtered_data["Keywords"].str.contains('|'.join(keywords), case=False, na=False)
                 ]
 
         # Filtrar por JCR
