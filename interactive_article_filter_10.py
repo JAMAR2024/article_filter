@@ -50,8 +50,11 @@ else:
     data = pd.DataFrame()
 
 if not data.empty:
-    # Handle NaN values and convert the 'Year' column to integers
-    data['Year'] = data['Year'].fillna(0).astype(int)
+    # Handle NaN values and convert the 'Year' column to integers without commas
+    data['Year'] = data['Year'].fillna(0).astype(int).astype(str).str.replace(',', '').astype(int)
+    
+    # Remove rows with all NaN values and limit to 205 rows
+    data = data.dropna(how='all').head(205)
     
     # Sidebar filters
     st.sidebar.header("Filters")
