@@ -50,8 +50,8 @@ else:
     data = pd.DataFrame()
 
 if not data.empty:
-    # Convert the 'Year' column to integers
-    data['Year'] = data['Year'].astype(int)
+    # Handle NaN values and convert the 'Year' column to integers
+    data['Year'] = data['Year'].fillna(0).astype(int)
     
     # Sidebar filters
     st.sidebar.header("Filters")
