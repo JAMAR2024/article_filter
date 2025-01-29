@@ -19,6 +19,18 @@ def load_data(file):
 # App configuration
 st.set_page_config(page_title="Interactive Article Filter", layout="wide")
 
+# Add custom CSS for background color
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #f0f8ff;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Title
 st.title("Interactive Article Filter")
 st.markdown("<h2 style='color: blue;'>Use the filters below to explore and segment the database interactively.</h2>", unsafe_allow_html=True)
